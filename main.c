@@ -28,6 +28,8 @@
 #include "fire_3_100x40c.h"
 #include "fire_4_100x40c.h"
 
+#define forever for(;;)
+
 /******************************************************************************
  * Defines
  *****************************************************************************/
@@ -215,7 +217,7 @@ proc2(void* arg)
   //check if connection with PCA9532
   pca9532Present = pca9532Init();
   
-	for(;;)
+	forever
 	{
 	  if (TRUE == pca9532Present)
 	  {
