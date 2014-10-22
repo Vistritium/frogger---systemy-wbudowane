@@ -35,6 +35,23 @@
 #define PAUSE_LENGTH     2
 
 
+
+#define MAX_CARS 20
+#define LANE_HEIGHT 12
+#define TOP_INTERFACE_HEIGHT 16
+
+
+#define COLOR_YELLOW 0xfc
+
+enum CarType { SLOWEST, SLOW, NORMAL, FAST, FASTEST };
+
+struct Car
+{
+  tU8 x;
+  tU8 lane;
+  enum CarType type;
+} cars[MAX_CARS];
+
 /*****************************************************************************
  * Local prototypes
  ****************************************************************************/
@@ -42,6 +59,8 @@ static void showScore();
 static void addSegment();
 static void setupLevel();
 static void gotoxy(tU8 x, tU8 y, tU8 color);
+
+static void drawCar(struct Car* car);
 
 
 /*****************************************************************************
@@ -111,68 +130,73 @@ void playSnake(void)
       }
 
       //add a segment to the end of the snake
-      addSegment();
+      //addSegment();
 
       //removed last segment of snake
-      gotoxy(snake[0].col, snake[0].row, 0);
+      //gotoxy(snake[0].col, snake[0].row, 0);
 
       //remove last segment from the array
-      for(i=1; i<=snakeLength; i++)
-        snake[i-1] = snake[i];
+      //for(i=1; i<=snakeLength; i++)
+        //snake[i-1] = snake[i];
 
       //display snake in yellow
-      for (i=0; i<=snakeLength; i++)
-        gotoxy(snake[i].col, snake[i].row, 0xfc);
+      //for (i=0; i<=snakeLength; i++)
+        //gotoxy(snake[i].col, snake[i].row, 0xfc);
+
+      for (i = 0; i < MAX_CARS; ++i) {
+        drawCar(&cars[i]);
+	  }
+
 
       //if first press on each level, pause until a key is pressed
-      if (firstPress == TRUE)
-      {
-        while(KEY_NOTHING == checkKey())
-          ;
-        firstPress = FALSE;
-      }
+      //~ if (firstPress == TRUE)
+      //~ {
+        //~ while(KEY_NOTHING == checkKey())
+          //~ ;
+        //~ firstPress = FALSE;
+      //~ }
 
       /* collision detection - walls (bad!) */
-      if ((snake[snakeLength-1].row >= MAXROW) || (snake[snakeLength-1].row < 0) ||
-          (snake[snakeLength-1].col >= MAXCOL) || (snake[snakeLength-1].col < 0) ||
+      //~ if ((snake[snakeLength-1].row >= MAXROW) || (snake[snakeLength-1].row < 0) ||
+          //~ (snake[snakeLength-1].col >= MAXCOL) || (snake[snakeLength-1].col < 0) ||
 
       /* collision detection - obstacles (bad!) */
-          (screenGrid[snake[snakeLength-1].row][snake[snakeLength-1].col] == 'x'))
-        keypress = KEY_CENTER;
+          //~ (screenGrid[snake[snakeLength-1].row][snake[snakeLength-1].col] == 'x'))
+        //~ keypress = KEY_CENTER;
 
       //collision detection - snake (bad!)
-      for (i=0; i<snakeLength-1; i++)
-        if ((snake[snakeLength-1].row) == (snake[i].row) &&
-            (snake[snakeLength-1].col) == (snake[i].col))
-        {
-          keypress = KEY_CENTER;   //exit loop - game over
-          break;
-        }
+      //~ for (i=0; i<snakeLength-1; i++)
+        //~ if ((snake[snakeLength-1].row) == (snake[i].row) &&
+            //~ (snake[snakeLength-1].col) == (snake[i].col))
+        //~ {
+          //~ keypress = KEY_CENTER;   //exit loop - game over
+          //~ break;
+        //~ }
 
       //collision detection - food (good!)
-      if (screenGrid[snake[snakeLength-1].row][snake[snakeLength-1].col] == '.')
-      {
-        //increase score and length of snake
-        score += snakeLength * obstacles;
-        showScore();
-        snakeLength++;
-        addSegment();
-
-        //if length of snake reaches certain size, onto next level
-        if (snakeLength == (level + 3) * 2)
-        {
-          score += level * 1000;
-          obstacles += 2;          //add obstacles
-          level++;
-          
-          //check if time to inclrease speed (every 5 levels)
-          if ((level % 5 == 0) && (speed > 1))
-            speed--;
-
-          //draw next level
-          setupLevel();
-        }
-      }
+      //~ if (screenGrid[snake[snakeLength-1].row][snake[snakeLength-1].col] == '.')
+      //~ {
+        //~ //increase score and length of snake
+        //~ score += snakeLength * obstacles;
+        //~ showScore();
+        //~ snakeLength++;
+        //~ addSegment();
+//~ 
+        //~ //if length of snake reaches certain size, onto next level
+        //~ if (snakeLength == (level + 3) * 2)
+        //~ {
+          //~ score += level * 1000;
+          //~ obstacles += 2;          //add obstacles
+          //~ level++;
+          //~ 
+          //~ //check if time to inclrease speed (every 5 levels)
+          //~ if ((level % 5 == 0) && (speed > 1))
+            //~ speed--;
+//~ 
+          //~ //draw next level
+          //~ setupLevel();
+        //~ }
+      //~ }
     } while (keypress != KEY_CENTER);
     
     //game over message
@@ -367,4 +391,44 @@ void gotoxy(tU8 x, tU8 y, tU8 color)
   lcdRect(2+(x*4), 16+(y*4), 4, 4, color);
 }
 
+void drawCar(struct Car* car)
+{
+  tU8 color;
+  tU8 topPadding;
+  tU8 width;
+  switch (car->type) {
+    case SLOWEST:
+	  topPadding = 2;
+	  width = 40;
+	  color = COLOR_YELLOW;
+    break;
 
+    case SLOW:
+	  topPadding = 2;
+	  width = 32;
+	  color = COLOR_YELLOW;
+    break;
+
+    case NORMAL: 
+	  topPadding = 2;
+	  width = 28;
+	  color = COLOR_YELLOW;
+    break;
+
+    case FAST:
+	  topPadding = 2;
+	  width = 24;
+	  color = COLOR_YELLOW;
+    break;
+
+    case FASTEST:
+	  topPadding = 2;
+	  width = 20;
+	  color = COLOR_YELLOW;
+    break;
+
+    default: break;
+  }
+  
+  lcdRect(car->x, TOP_INTERFACE_HEIGHT + (car->lane * LANE_HEIGHT) + topPadding, width, LANE_HEIGHT - topPadding * 2, color);
+}
