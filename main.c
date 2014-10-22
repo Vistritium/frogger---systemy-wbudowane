@@ -59,6 +59,11 @@ static void initProc(void* arg);
 volatile tU32 ms;
 static tU8 contrast = 46;
 
+typedef enum menuState {
+	menu,
+	scores,
+	info
+} menuState_t;
 
 /*****************************************************************************
  *
@@ -87,6 +92,40 @@ main(void)
  *
  ****************************************************************************/
 static void
+refreshMenu(int pos)
+{
+  lcdColor(0,0);
+  int i;
+
+  for (i = 0; i < 3; i++)
+  {
+	  lcdGotoxy(22,20+(20*i));
+
+	  if (i == pos)
+	  {
+		  lcdColor(0x00,0xfd);
+	  }
+	  else
+	  {
+		  lcdColor(0x00,0xe0);
+	  }
+
+	  switch(i)
+	  {
+		  case 0:
+			  lcdPuts("Play");
+			  break;
+		  case 1:
+			  lcdPuts("Hi Scores");
+			  break;
+		  case 2:
+			  lcdPuts("Info");
+			  break;
+	  }
+  }
+}
+
+static void
 drawMenu(int pos)
 {
   lcdColor(0,0);
@@ -97,21 +136,105 @@ drawMenu(int pos)
 
   lcdGotoxy(48,1);
   lcdColor(0x6d,0);
-  lcdPuts("MENU");
+  lcdPuts("FROGGER");
 
-  lcdGotoxy(22,20+(14*pos));
+  refreshMenu(pos);
+}
+
+static void
+drawInfo()
+{
+  lcdColor(0,0);
+  lcdClrscr();
+
+  lcdRect(14, 0, 102, 128, 0x6d);
+  lcdRect(15, 17, 100, 110, 0);
+
+  lcdGotoxy(48,1);
+  lcdColor(0x6d,0);
+  lcdPuts("INFO");
+
   lcdColor(0x00,0xe0);
 
-//  lcdColor(0x00,0xfd);
-  switch(pos)
-  {
-	  case 0:
-		  lcdPuts("Play Snake");
-		  break;
-	  case 1:
-		  lcdPuts("Load");
-		  break;
-  }
+  lcdGotoxy(22,20);
+  lcdPuts("Frogger v8");
+  lcdGotoxy(22,35);
+  lcdPuts("Do not play");
+  lcdGotoxy(22,50);
+  lcdPuts("when on");
+  lcdGotoxy(22,65);
+  lcdPuts("fire.");
+}
+
+static void
+drawScores()
+{
+  lcdColor(0,0);
+  lcdClrscr();
+
+  lcdRect(14, 0, 102, 128, 0x6d);
+  lcdRect(15, 17, 100, 110, 0);
+
+  lcdGotoxy(35,1);
+  lcdColor(0x6d,0);
+  lcdPuts("HI SCORES");
+
+
+  int i;
+
+    for (i = 0; i < 4; i++)
+    {
+      // draw taken place:
+      lcdGotoxy(20,20+(15*i));
+      lcdColor(0x00,0xab);
+
+      char blbl[] = "1";
+      blbl[0] = i + 1 + '0';
+
+      lcdPuts(blbl);
+
+      // draw person's initails:
+  	  lcdGotoxy(30,20+(15*i));
+
+  	  lcdColor(0x00,0xfd);
+
+  	  switch(i)
+  	  {
+  		  case 0:
+  			  lcdPuts("OMG");
+  			  break;
+  		  case 1:
+  			  lcdPuts("BLU");
+  			  break;
+  		  case 2:
+  			  lcdPuts("YES");
+  			  break;
+  		  case 3:
+  			  lcdPuts("RED");
+  			  break;
+  	  }
+
+  	  // draw person's score:
+	  lcdGotoxy(70,20+(15*i));
+
+	  lcdColor(0x00,0xfd);
+
+	  switch(i)
+	  {
+		  case 0:
+			  lcdPuts("5600");
+			  break;
+		  case 1:
+			  lcdPuts("4000");
+			  break;
+		  case 2:
+			  lcdPuts("380");
+			  break;
+		  case 3:
+			  lcdPuts("6");
+			  break;
+	  }
+    }
 }
 
 /*****************************************************************************
@@ -128,13 +251,15 @@ proc1(void* arg)
 {
   static tU8 i = 0;
 
+  menuState_t state = menu;
+
   printf("\n\n\n\n\n*******************************************************\n");
   printf("*                                                     *\n");
   printf("* Demo program for 'Experiment Expansion Board'       *\n");
   printf("* running on LPC2103 Education Board.                 *\n");
   printf("* - Snake game                                        *\n");
   printf("*                                                     *\n");
-  printf("* (C) Embedded Artists 2008                           *\n");
+  printf("* (C) Embedded Artists 2014                           *\n");
   printf("*                                                     *\n");
   printf("*******************************************************\n");
 
@@ -155,35 +280,64 @@ proc1(void* arg)
     anyKey = checkKey();
     if (anyKey != KEY_NOTHING)
     {
-      //select specific function
-      if (anyKey == KEY_CENTER)
-      {
-        playSnake();
-        drawMenu(pos);
-      }
-      
-      if (anyKey == KEY_DOWN)
-	  {
-		  pos+=1;
-		  if (pos > 1)
-			  pos = 0;
-		  drawMenu(pos);
-	  }
+    	if (state == menu)
+    	{
+			//select specific function
+			if (anyKey == KEY_CENTER)
+			{
+			  switch(pos)
+				  {
+					  case 0:
+						  playSnake();
+						  drawMenu(pos);
+						  break;
+					  case 1:
+						  state = scores;
+						  drawScores();
+						  break;
+					  case 2:
+						  state = info;
+						  drawInfo();
+						  break;
+				  }
+			}
 
-      //adjust contrast
-      else if (anyKey == KEY_RIGHT)
-      {
-        contrast++;
-        if (contrast > 127)
-          contrast = 127;
-        lcdContrast(contrast);
-      }
-      else if (anyKey == KEY_LEFT)
-      {
-        if (contrast > 0)
-          contrast--;
-        lcdContrast(contrast);
-      }
+			if (anyKey == KEY_DOWN)
+			{
+			  pos+=1;
+			  if (pos > 2)
+				  pos = 0;
+			  refreshMenu(pos);
+			}
+
+			if (anyKey == KEY_UP)
+			{
+			  pos-=1;
+			  if (pos < 0)
+				  pos = 2;
+			  refreshMenu(pos);
+			}
+
+			//adjust contrast
+			else if (anyKey == KEY_RIGHT)
+			{
+			contrast++;
+			if (contrast > 127)
+			  contrast = 127;
+			lcdContrast(contrast);
+			}
+			else if (anyKey == KEY_LEFT)
+			{
+			if (contrast > 0)
+			  contrast--;
+			lcdContrast(contrast);
+			}
+    	}
+    	else
+    	{
+    		state = menu;
+    		drawMenu(pos);
+    	}
     }
 
     switch(i)
