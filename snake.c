@@ -458,3 +458,23 @@ void updateFrogger(tU8 key) {
 		case KEY_NOTHING: default: break;
 	}
 }
+
+int collides(tU8 laneX, tU8 laneY){
+	int froggerLeftBorder = laneX * LANE_HEIGHT;
+	int froggerRightBorder = laneX * LANE_HEIGHT + LANE_HEIGHT;
+
+	int i;
+	for(i = 0; i < MAX_CARS; i++){
+		struct Car car = cars[i];
+		//if lane, check x precisely
+		if(laneY == car.lane){
+			int width = widths[i];
+			int carLeftBorder = car.x;
+			int carRightBorder = car.x * width;
+			if(froggerRightBorder > carLeftBorder && froggerLeftBorder < carRightBorder){
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
