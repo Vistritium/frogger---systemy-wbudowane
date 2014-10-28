@@ -38,7 +38,12 @@
 
 #define MAX_CARS 20
 #define MAX_LANES 8
+#define MAX_ROWS 10
 #define LANE_HEIGHT 12
+#define GRID_WIDTH  12
+#define FROGGER_PADDING  2
+#define FROGGER_WIDTH  8
+#define LEFT_PADDING 4
 #define TOP_INTERFACE_HEIGHT 16
 
 
@@ -60,6 +65,10 @@ struct Car
   tU8 lane;
   enum CarType type;
 } cars[MAX_CARS];
+
+/* Frogger stuff */
+static tU8 froggerX, froggerY;
+
 
 /*****************************************************************************
  * Local prototypes
@@ -107,7 +116,7 @@ extern volatile tU32 ms;
  ****************************************************************************/
 void playSnake(void)
 {
-  tU8 keypress;
+  tU8 keypress, lastKeypress = KEY_NOTHING;
   tU8 done = FALSE;
 
   //game loop
@@ -130,14 +139,6 @@ void playSnake(void)
       
       //check if key press
       keypress = checkKey();
-      if (keypress != KEY_NOTHING)
-      {
-        if ((keypress == KEY_UP)    ||
-            (keypress == KEY_RIGHT) ||
-            (keypress == KEY_DOWN)  ||
-            (keypress == KEY_LEFT))
-          direction = keypress;
-      }
 
       //add a segment to the end of the snake
       //addSegment();
@@ -158,6 +159,10 @@ void playSnake(void)
     	updateCar(&cars[i]);
         drawCar(&cars[i], 0);
 	  }
+
+	  drawFrogger(1);
+	  updateFrogger(keypress);
+	  drawFrogger(0);
 
 
       //if first press on each level, pause until a key is pressed
@@ -422,4 +427,34 @@ void drawCar(struct Car* car, int black)
 void updateCar(struct Car* car)
 {
   car->x += speeds[car->type];
+}
+
+void drawFrogger(int black) {
+  lcdRect(froggerX * GRID_WIDTH + FROGGER_PADDING + LEFT_PADDING,
+		  TOP_INTERFACE_HEIGHT + (froggerY * LANE_HEIGHT) + FROGGER_PADDING,
+		  FROGGER_WIDTH,
+		  FROGGER_WIDTH,
+		  black ? 0x00 : COLOR_GREEN);
+}
+
+void updateFrogger(tU8 key) {
+	switch (key) {
+		case KEY_UP:
+			if (froggerY > 0) froggerY -= 1;
+		break;
+
+		case KEY_DOWN:
+			if (froggerY < MAX_LANES - 1) froggerY += 1;
+		break;
+
+		case KEY_LEFT:
+			if (froggerX > 0) froggerX -= 1;
+		break;
+
+		case KEY_RIGHT:
+			if (froggerX < MAX_ROWS - 1) froggerX += 1;
+		break;
+
+		case KEY_NOTHING: default: break;
+	}
 }
