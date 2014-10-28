@@ -37,13 +37,22 @@
 
 
 #define MAX_CARS 20
+#define MAX_LANES 8
 #define LANE_HEIGHT 12
 #define TOP_INTERFACE_HEIGHT 16
 
 
 #define COLOR_YELLOW 0xfc
+#define COLOR_RED 0xf0
+#define COLOR_GREEN 0xcc
+#define COLOR_BLUE 0xc3
+#define COLOR_PURPLE 0xf3
 
 enum CarType { SLOWEST, SLOW, NORMAL, FAST, FASTEST };
+int topPaddings[] = {2, 2, 2, 2, 2};
+int widths[] = {32, 28, 24, 20, 16};
+tU8 colors[] = {COLOR_YELLOW, COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE};
+int speeds[] = {1, -2, 3, -4, 5};
 
 struct Car
 {
@@ -60,7 +69,8 @@ static void addSegment();
 static void setupLevel();
 static void gotoxy(tU8 x, tU8 y, tU8 color);
 
-static void drawCar(struct Car* car);
+static void drawCar(struct Car* car, int black);
+static void updateCar(struct Car* car);
 
 
 /*****************************************************************************
@@ -144,7 +154,9 @@ void playSnake(void)
         //gotoxy(snake[i].col, snake[i].row, 0xfc);
 
       for (i = 0; i < MAX_CARS; ++i) {
-        drawCar(&cars[i]);
+        drawCar(&cars[i], 1);
+    	updateCar(&cars[i]);
+        drawCar(&cars[i], 0);
 	  }
 
 
@@ -300,6 +312,13 @@ void setupLevel()
     }
   }
 
+  for (i = 0; i < MAX_CARS; ++i) {
+	  cars[i].x = i;
+	  cars[i].lane = i % MAX_LANES;
+	  cars[i].type = (enum CarType) i % 5;
+
+  }
+
   showScore();
 }
 
@@ -391,44 +410,16 @@ void gotoxy(tU8 x, tU8 y, tU8 color)
   lcdRect(2+(x*4), 16+(y*4), 4, 4, color);
 }
 
-void drawCar(struct Car* car)
+void drawCar(struct Car* car, int black)
 {
-  tU8 color;
-  tU8 topPadding;
-  tU8 width;
-  switch (car->type) {
-    case SLOWEST:
-	  topPadding = 2;
-	  width = 40;
-	  color = COLOR_YELLOW;
-    break;
+  lcdRect(car->x,
+		  TOP_INTERFACE_HEIGHT + (car->lane * LANE_HEIGHT) + topPaddings[car->type],
+		  widths[car->type],
+		  LANE_HEIGHT - topPaddings[car->type] * 2,
+		  black ? 0x00 : colors[car->type]);
+}
 
-    case SLOW:
-	  topPadding = 2;
-	  width = 32;
-	  color = COLOR_YELLOW;
-    break;
-
-    case NORMAL: 
-	  topPadding = 2;
-	  width = 28;
-	  color = COLOR_YELLOW;
-    break;
-
-    case FAST:
-	  topPadding = 2;
-	  width = 24;
-	  color = COLOR_YELLOW;
-    break;
-
-    case FASTEST:
-	  topPadding = 2;
-	  width = 20;
-	  color = COLOR_YELLOW;
-    break;
-
-    default: break;
-  }
-  
-  lcdRect(car->x, TOP_INTERFACE_HEIGHT + (car->lane * LANE_HEIGHT) + topPadding, width, LANE_HEIGHT - topPadding * 2, color);
+void updateCar(struct Car* car)
+{
+  car->x += speeds[car->type];
 }
