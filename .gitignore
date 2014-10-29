@@ -21,3 +21,7 @@
 *.app
 *.i*86
 *.x86_64
+startup
+.depend
+lcd_game_demo.map
+*lst
