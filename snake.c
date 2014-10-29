@@ -34,8 +34,6 @@
 #define SNAKE_START_ROW  7
 #define PAUSE_LENGTH     2
 
-
-
 #define MAX_CARS 20
 #define MAX_LANES 8
 #define MAX_ROWS 10
@@ -46,6 +44,8 @@
 #define LEFT_PADDING 4
 #define TOP_INTERFACE_HEIGHT 16
 
+#define INITIAL_FROGGER_X 5
+#define INITIAL_FROGGER_Y 7
 
 #define COLOR_YELLOW 0xfc
 #define COLOR_RED 0xf0
@@ -67,7 +67,7 @@ struct Car
 } cars[MAX_CARS];
 
 /* Frogger stuff */
-static tU8 froggerX, froggerY;
+static tU8 froggerX = INITIAL_FROGGER_X, froggerY = INITIAL_FROGGER_Y;
 
 
 /*****************************************************************************
@@ -163,6 +163,11 @@ void playSnake(void)
 	  drawFrogger(1);
 	  updateFrogger(keypress);
 	  drawFrogger(0);
+
+	  if (collides(froggerX, froggerY)) {
+        froggerX = INITIAL_FROGGER_X;
+        froggerY = INITIAL_FROGGER_Y;
+	  }
 
 
       //if first press on each level, pause until a key is pressed
