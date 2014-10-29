@@ -48,10 +48,10 @@
 #define INITIAL_FROGGER_Y 7
 
 #define COLOR_YELLOW 0xfc
-#define COLOR_RED 0xf0
-#define COLOR_GREEN 0xcc
-#define COLOR_BLUE 0xc3
-#define COLOR_PURPLE 0xf3
+#define COLOR_RED 0xe0
+#define COLOR_GREEN 0x1c
+#define COLOR_BLUE 0x03 
+#define COLOR_PURPLE 0xe3
 
 enum CarType { SLOWEST, SLOW, NORMAL, FAST, FASTEST };
 int topPaddings[] = {2, 2, 2, 2, 2};
