@@ -34,7 +34,7 @@
 #define SNAKE_START_ROW  7
 #define PAUSE_LENGTH     2
 
-#define MAX_CARS 20
+#define MAX_CARS 18
 #define MAX_LANES 8
 #define MAX_ROWS 10
 #define LANE_HEIGHT 12
@@ -59,6 +59,8 @@ int widths[] = {32, 28, 24, 20, 16};
 tU8 colors[] = {COLOR_YELLOW, COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE};
 int speeds[] = {1, -2, 3, -4, 5};
 
+enum CarType carTypesOnLanes[] = { FASTEST, NORMAL, FAST, SLOW, SLOWEST, NORMAL };
+
 struct Car
 {
   tU8 x;
@@ -80,6 +82,8 @@ static void gotoxy(tU8 x, tU8 y, tU8 color);
 
 static void drawCar(struct Car* car, int black);
 static void updateCar(struct Car* car);
+
+int collides(tU8 laneX, tU8 laneY);
 
 
 /*****************************************************************************
@@ -273,7 +277,7 @@ void setupLevel()
 
   //draw frame
   lcdGotoxy(42,0);
-  lcdPuts("Big mac");
+  lcdPuts("FROGGER 2000");
 
   //draw game board rectangle
   lcdRect(0, 14, (4*MAXCOL)+4, (4*MAXROW)+4, 3);
@@ -307,26 +311,27 @@ void setupLevel()
     snake[i].col = SNAKE_START_COL + i;
   }
 
-  //draw game board
-  for(row=0; row<MAXROW; row++)
-  {
-    for(col=0; col<MAXCOL; col++)
-    {
-      switch(screenGrid[row][col])
-      {
-        case ' ': gotoxy(col,row,0); break;
-        case '.': gotoxy(col,row,0x1c); break;
-        case 'x': gotoxy(col,row,0xe0); break;
-        default: break;
-      }
-    }
-  }
+  //~ //draw game board
+  //~ for(row=0; row<MAXROW; row++)
+  //~ {
+    //~ for(col=0; col<MAXCOL; col++)
+    //~ {
+      //~ switch(screenGrid[row][col])
+      //~ {
+        //~ case ' ': gotoxy(col,row,0); break;
+        //~ case '.': gotoxy(col,row,0x1c); break;
+        //~ case 'x': gotoxy(col,row,0xe0); break;
+        //~ default: break;
+      //~ }
+    //~ }
+  //~ }
+
+  tU8 carsPerLane = MAX_CARS / (MAX_LANES - 2);
 
   for (i = 0; i < MAX_CARS; ++i) {
-	  cars[i].x = i;
-	  cars[i].lane = i % MAX_LANES;
-	  cars[i].type = (enum CarType) i % 5;
-
+	  cars[i].lane = i / carsPerLane + 1;
+	  cars[i].x = (cars[i].lane * carsPerLane - i) * 30;
+	  cars[i].type = carTypesOnLanes[cars[i].lane - 1];
   }
 
   showScore();
@@ -464,7 +469,7 @@ void updateFrogger(tU8 key) {
 	}
 }
 
-int collides(tU8 laneX, tU8 laneY){
+int collides(tU8 laneX, tU8 laneY) {
 	int froggerLeftBorder = laneX * LANE_HEIGHT;
 	int froggerRightBorder = laneX * LANE_HEIGHT + LANE_HEIGHT;
 
