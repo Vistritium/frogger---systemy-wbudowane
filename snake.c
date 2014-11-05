@@ -53,6 +53,8 @@
 #define COLOR_BLUE 0x03 
 #define COLOR_PURPLE 0xe3
 
+int collides(tU8 laneX, tU8 laneY);
+
 enum CarType { SLOWEST, SLOW, NORMAL, FAST, FASTEST };
 int topPaddings[] = {2, 2, 2, 2, 2};
 int widths[] = {32, 28, 24, 20, 16};
