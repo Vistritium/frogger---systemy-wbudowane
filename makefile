@@ -60,7 +60,8 @@ CSRCS   = main.c          \
           lcd_hw.c        \
           snake.c         \
           key.c           \
-          select.c
+          select.c		  \
+          time_interval.c
 
 # List assembler source files here
 ASRCS   = 
