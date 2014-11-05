@@ -61,11 +61,11 @@ int widths[] = {32, 28, 24, 20, 16};
 tU8 colors[] = {COLOR_YELLOW, COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE};
 int speeds[] = {1, -2, 3, -4, 5};
 
-enum CarType carTypesOnLanes[] = { FASTEST, NORMAL, FAST, SLOW, SLOWEST, NORMAL };
+enum CarType carTypesOnLanes[] = { NORMAL, FAST, FASTEST, SLOW, SLOWEST, FAST };
 
 struct Car
 {
-  tU8 x;
+  tS32 x;
   tU8 lane;
   enum CarType type;
 } cars[MAX_CARS];
@@ -282,8 +282,8 @@ void setupLevel()
   lcdPuts("FROGGER 2000");
 
   //draw game board rectangle
-  lcdRect(0, 14, (4*MAXCOL)+4, (4*MAXROW)+4, 3);
-  lcdRect(2, 16, 4*MAXCOL,     4*MAXROW,     1);
+  //lcdRect(0, 14, (4*MAXCOL)+4, (4*MAXROW)+4, 3);
+  //lcdRect(2, 16, 4*MAXCOL,     4*MAXROW,     1);
 
   //set up global variables for new level
   snakeLength = level + 4;
@@ -332,8 +332,8 @@ void setupLevel()
 
   for (i = 0; i < MAX_CARS; ++i) {
 	  cars[i].lane = i / carsPerLane + 1;
-	  cars[i].x = (cars[i].lane * carsPerLane - i) * 30;
 	  cars[i].type = carTypesOnLanes[cars[i].lane - 1];
+	  cars[i].x = (cars[i].lane * carsPerLane - i) * widths[cars[i].type] + (3 * abs(speeds[cars[i].type]));
   }
 
   showScore();
@@ -438,6 +438,9 @@ void drawCar(struct Car* car, int black)
 
 void updateCar(struct Car* car)
 {
+  if (car->x > 128 + 32) car->x = 0;
+  else if (car->x < -32) car->x = 128;
+	
   car->x += speeds[car->type];
 }
 
