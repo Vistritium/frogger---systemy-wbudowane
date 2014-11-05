@@ -12,6 +12,41 @@ void set_timeout(tU32 timeout){
 }
 */
 
+static tS32 begin_time = 30 * 1000;
+
+void timeProcStart(void* arg){
+	start();
+	for(;;){
+		if(timeLeft > 0){
+			wait(1);
+			timeLeft = timeLeft - 1;
+
+			if((timeLeft - 1) % (whenFinish / 8)){
+				disableLed((timeLeft - 1) / (whenFinish / 8));
+			}
+		}
+	}
+}
+
+void disableLed(tS32 ledNumber){
+	printf("disabling led %d\n", ledNumber);
+}
+void enableAllLeds(){
+
+}
+
+void start(){
+	timeLeft = begin_time;
+}
+void stop(){
+	timeLeft = -1;
+}
+void reset(){
+	start();
+}
+
+
+
 void wait(int delay){
 
 		  TIMER1_TCR = 0x02;          //stop and reset timer

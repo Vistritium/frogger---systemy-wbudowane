@@ -18,6 +18,7 @@
 #include "adc.h"
 #include "lcd.h"
 #include "pca9532.h"
+#include "time_interval.h"
 
 #include "snake.h"
 #include "key.h"
@@ -57,6 +58,12 @@ static void initProc(void* arg);
  * Global variables
  ****************************************************************************/
 volatile tU32 ms;
+
+//value -1 means timer is not working
+//value 0 means player time is over
+//value bigger than 0 means player has time left
+volatile tS32 timeLeft = -1;
+
 static tU8 contrast = 46;
 
 typedef enum menuState {
@@ -441,8 +448,8 @@ initProc(void* arg)
   i2cInit();  //initialize I2C
   osCreateProcess(proc1, proc1Stack, PROC1_STACK_SIZE, &pid1, 3, NULL, &error);
   osStartProcess(pid1, &error);
-  //osCreateProcess(proc2, proc2Stack, PROC2_STACK_SIZE, &pid2, 3, NULL, &error);
-  //osStartProcess(pid2, &error);
+  osCreateProcess(timeProcStart, proc2Stack, PROC2_STACK_SIZE, &pid2, 3, NULL, &error);
+  osStartProcess(pid2, &error);
 
   osDeleteProcess();
 }
