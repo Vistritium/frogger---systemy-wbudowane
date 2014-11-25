@@ -23,6 +23,11 @@
 #include "key.h"
 #include "select.h"
 
+#include <lpc2xxx.h>
+#include <consol.h>
+#include "i2c.h"
+#include "adc.h"
+
 
 /******************************************************************************
  * Typedefs and defines
@@ -53,9 +58,18 @@
 #define COLOR_BLUE 0x03 
 #define COLOR_PURPLE 0xe3
 
+#define SEVEN_SEG_A   0x00010000
+#define SEVEN_SEG_B   0x00020000
+#define SEVEN_SEG_C   0x00040000
+#define SEVEN_SEG_D   0x04000000
+#define SEVEN_SEG_E   0x08000000
+#define SEVEN_SEG_F   0x10000000
+#define SEVEN_SEG_G   0x20000000
+#define SEVEN_SEG_DOT 0x40000000
+
 int collides(tU8 laneX, tU8 laneY);
 
-enum CarType { SLOWEST, SLOW, NORMAL, FAST, FASTEST };
+enum CarType { SLOWEST, SLOW, NORMAL, FAST, FASTEST, CAR_TYPE_COUNT };
 int topPaddings[] = {2, 2, 2, 2, 2};
 int widths[] = {32, 28, 24, 20, 16};
 tU8 colors[] = {COLOR_YELLOW, COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE};
@@ -87,6 +101,13 @@ static void updateCar(struct Car* car);
 
 int collides(tU8 laneX, tU8 laneY);
 
+void set7seg(tU8 value);
+void lightLeds();
+void darkenLeds();
+void loseLife();
+
+static void nextLevel();
+
 
 /*****************************************************************************
  * Local variables
@@ -100,6 +121,7 @@ static tBool firstPress;
 static tS32  high_score = 0;
 static tS8   screenGrid[MAXROW][MAXCOL];
 static tS8   direction = KEY_RIGHT;
+static tS8   lives = 7;
 
 struct snakeSegment
 {
@@ -134,6 +156,11 @@ void playSnake(void)
     speed     = 14;
     srand(ms);        //Ensure random seed initiated
     setupLevel();
+
+    lives = -1;
+    lightLeds();
+
+    set7seg(1);
 
     //main loop
     do
@@ -173,7 +200,13 @@ void playSnake(void)
 	  if (collides(froggerX, froggerY)) {
         froggerX = INITIAL_FROGGER_X;
         froggerY = INITIAL_FROGGER_Y;
+
+        loseLife();
 	  }
+
+      if (froggerY >= MAX_LANES - 1) {
+        nextLevel();
+      }
 
 
       //if first press on each level, pause until a key is pressed
@@ -225,7 +258,10 @@ void playSnake(void)
           //~ setupLevel();
         //~ }
       //~ }
-    } while (keypress != KEY_CENTER);
+    } while (keypress != KEY_CENTER || level >= 10);
+
+    darkenLeds();
+    set7seg(0);
     
     //game over message
     if (score > high_score)
@@ -241,7 +277,7 @@ void playSnake(void)
       menu.yLen = 4*14;
       menu.noOfChoices = 2;
       menu.initialChoice = 0;
-      menu.pHeaderText = "Game over!";
+      menu.pHeaderText = level >= 10? "You Win!!!": "Game over!";
       menu.headerTextXpos = 20;
       menu.pChoice[0] = "Restart game";
       menu.pChoice[1] = "End game";
@@ -333,7 +369,7 @@ void setupLevel()
   for (i = 0; i < MAX_CARS; ++i) {
 	  cars[i].lane = i / carsPerLane + 1;
 	  cars[i].type = carTypesOnLanes[cars[i].lane - 1];
-	  cars[i].x = (cars[i].lane * carsPerLane - i) * widths[cars[i].type] + (3 * abs(speeds[cars[i].type]));
+	  cars[i].x = (cars[i].lane * carsPerLane - i) * widths[cars[i].type] + (24 + 4 * abs(speeds[cars[i].type]));
   }
 
   showScore();
@@ -438,9 +474,9 @@ void drawCar(struct Car* car, int black)
 
 void updateCar(struct Car* car)
 {
-  if (car->x > 128 + 32) car->x = 0;
-  else if (car->x < -32) car->x = 128;
-	
+  if (car->x > 128 + 50) car->x = -50;
+  else if (car->x < -50) car->x = 128 + 50;
+
   car->x += speeds[car->type];
 }
 
@@ -492,4 +528,71 @@ int collides(tU8 laneX, tU8 laneY) {
 		}
 	}
 	return 0;
+}
+
+void nextLevel() {
+    froggerX = INITIAL_FROGGER_X;
+    froggerY = INITIAL_FROGGER_Y;
+
+    int i;
+
+    for (i = 0; i < CAR_TYPE_COUNT; ++i) {
+        speeds[i] += speeds[i] > 0? 1: -1;
+    }
+
+    score += level;
+
+    level += 1;
+    if (level < 10)
+    {
+        set7seg(level);
+    }
+    // TODO: increment level counter
+    // if level == max then you win
+}
+
+void lightLeds()
+{
+	int i = 0;
+	for (i = lives + 1; i < 8; i++)
+		setPca9532Pin(i, 0);
+	lives = 7;
+}
+
+void darkenLeds()
+{
+	int i = 0;
+	for (i = lives; i >= 0; i--)
+		setPca9532Pin(i, 1);
+	lives = 0;
+}
+
+void loseLife() {
+	if (lives != -1)
+	setPca9532Pin(lives, 1);
+	if (lives >= 0)
+		lives -= 1;
+}
+
+void set7seg(tU8 value)
+{
+	IODIR |= 0x7c070000;  //7-segment
+
+	IOSET = 0x7c070000;
+  switch(value)
+  {
+    case  0: IOCLR = (SEVEN_SEG_A | SEVEN_SEG_B | SEVEN_SEG_C | SEVEN_SEG_D | SEVEN_SEG_E | SEVEN_SEG_F              ); break;
+    case  1: IOCLR = (              SEVEN_SEG_B | SEVEN_SEG_C                                                        ); break;
+    case  2: IOCLR = (SEVEN_SEG_A | SEVEN_SEG_B               | SEVEN_SEG_D | SEVEN_SEG_E               | SEVEN_SEG_G); break;
+    case  3: IOCLR = (SEVEN_SEG_A | SEVEN_SEG_B | SEVEN_SEG_C | SEVEN_SEG_D                             | SEVEN_SEG_G); break;
+    case  4: IOCLR = (              SEVEN_SEG_B | SEVEN_SEG_C                             | SEVEN_SEG_F | SEVEN_SEG_G); break;
+    case  5: IOCLR = (SEVEN_SEG_A               | SEVEN_SEG_C | SEVEN_SEG_D               | SEVEN_SEG_F | SEVEN_SEG_G); break;
+    case  6: IOCLR = (SEVEN_SEG_A               | SEVEN_SEG_C | SEVEN_SEG_D | SEVEN_SEG_E | SEVEN_SEG_F | SEVEN_SEG_G); break;
+    case  7: IOCLR = (SEVEN_SEG_A | SEVEN_SEG_B | SEVEN_SEG_C                                                        ); break;
+    case  8: IOCLR = (SEVEN_SEG_A | SEVEN_SEG_B | SEVEN_SEG_C | SEVEN_SEG_D | SEVEN_SEG_E | SEVEN_SEG_F | SEVEN_SEG_G); break;
+    case  9: IOCLR = (SEVEN_SEG_A | SEVEN_SEG_B | SEVEN_SEG_C | SEVEN_SEG_D               | SEVEN_SEG_F | SEVEN_SEG_G); break;
+    default: break;
+  }
+
+  IOSET  = 0x00006000;
 }

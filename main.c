@@ -104,7 +104,7 @@ refreshMenu(int pos)
   lcdColor(0,0);
   int i;
 
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < 4; i++)
   {
 	  lcdGotoxy(22,20+(20*i));
 
@@ -125,7 +125,10 @@ refreshMenu(int pos)
 		  case 1:
 			  lcdPuts("Hi Scores");
 			  break;
-		  case 2:
+          case 2:
+			  lcdPuts("Reset Scores");
+			  break;
+		  case 3:
 			  lcdPuts("Info");
 			  break;
 	  }
@@ -244,6 +247,13 @@ drawScores()
     }
 }
 
+
+void clearScores()
+{
+    
+}
+
+
 /*****************************************************************************
  *
  * Description:
@@ -303,10 +313,12 @@ proc1(void* arg)
 						  drawScores();
 						  break;
 					  case 2:
+						  clearScores();
+						  break;
+                      case 3:
 						  state = info;
 						  drawInfo();
-						  break;
-				  }
+						  break;				  }
 			}
 
 			if (anyKey == KEY_DOWN)
