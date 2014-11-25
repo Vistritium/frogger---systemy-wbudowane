@@ -44,21 +44,25 @@ static tU8 convertTotU8From(tS16 from){
 	return (tS16) from;
 }
 
+static tS16 convertTotS16From(tU8 from){
+	return (tS16)from;
+}
+
 void saveScores(scores_t* scores){
 	buffer[0] = scores->nick1[0];
 	buffer[1] = scores->nick1[1];
 	buffer[2] = scores->nick1[2];
-	buffer[3] = scores->score1;
+	buffer[3] = convertTotU8From(scores->score1);
 
 	buffer[4] = scores->nick2[0];
 	buffer[5] = scores->nick2[1];
 	buffer[6] = scores->nick2[2];
-	buffer[7] = scores->score2;
+	buffer[7] = convertTotU8From(scores->score2);
 
 	buffer[8] = scores->nick3[0];
 	buffer[9] = scores->nick3[1];
 	buffer[10] = scores->nick3[2];
-	buffer[11] = scores->score3;
+	buffer[11] = convertTotU8From(scores->score3);
 
 	saveToEeprom(buffer);
 }
@@ -67,17 +71,17 @@ scores_t* loadScores(){
 	m_scores.nick1[0] = scores[0];
 	m_scores.nick1[1] = scores[1];
 	m_scores.nick1[2] = scores[2];
-	m_scores.score1 = scores[3];
+	m_scores.score1 = convertTotS16From(scores[3]);
 
 	m_scores.nick2[0] = scores[4];
 	m_scores.nick2[1] = scores[5];
 	m_scores.nick2[2] = scores[6];
-	m_scores.score2 = scores[7];
+	m_scores.score2 = convertTotS16From(scores[7]);
 
 	m_scores.nick3[0] = scores[8];
 	m_scores.nick3[1] = scores[9];
 	m_scores.nick3[2] = scores[10];
-	m_scores.score3 = scores[11];
+	m_scores.score3 = convertTotS16From(scores[11]);
 
 	return &m_scores;
 }
