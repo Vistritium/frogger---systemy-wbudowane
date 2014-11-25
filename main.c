@@ -262,12 +262,8 @@ proc1(void* arg)
 
   printf("\n\n\n\n\n*******************************************************\n");
   printf("*                                                     *\n");
-  printf("* Demo program for 'Experiment Expansion Board'       *\n");
+  printf("* Frogger app									        *\n");
   printf("* running on LPC2103 Education Board.                 *\n");
-  printf("* - Snake game                                        *\n");
-  printf("*                                                     *\n");
-  printf("* (C) Embedded Artists 2014                           *\n");
-  printf("*                                                     *\n");
   printf("*******************************************************\n");
 
   IODIR |= 0x00006000;  //P0.13/14
@@ -370,8 +366,9 @@ proc1(void* arg)
  *    [in] arg - This parameter is not used in this application. 
  *
  ****************************************************************************/
+//todelete
 static void
-proc2(void* arg)
+proc24(void* arg)
 {
   tU8 pca9532Present = FALSE;
 
