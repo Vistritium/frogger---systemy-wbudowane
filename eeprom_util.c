@@ -38,3 +38,10 @@ tU8* readFromEprom(){
 
 	return buffer;
 }
+
+void saveScores(scores_t* scores){
+
+}
+scores_t* loadScores(){
+	return (void*)0;
+}
