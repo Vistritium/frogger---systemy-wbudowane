@@ -18,7 +18,7 @@
 #include "adc.h"
 #include "lcd.h"
 #include "pca9532.h"
-#include "time_interval.h"
+#include "time_manager.h"
 
 #include "snake.h"
 #include "key.h"

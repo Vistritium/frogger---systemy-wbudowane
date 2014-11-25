@@ -1,4 +1,4 @@
-#include "time_interval.h"
+#include "time_manager.h"
 #include <printf_P.h>
 
 static tU32 whenFinish;
@@ -30,13 +30,18 @@ void timeProcStart(void* arg){
 
 void disableLed(tS32 ledNumber){
 	printf("disabling led %d\n", ledNumber);
+	setPca9532Pin(ledNumber, 0);
 }
 void enableAllLeds(){
-
+	int i;
+	for(i = 0; i < 8; i++){
+		setPca9532Pin(i, 1);
+	}
 }
 
 void start(){
 	timeLeft = begin_time;
+	enableAllLeds();
 }
 void stop(){
 	timeLeft = -1;

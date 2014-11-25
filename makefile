@@ -61,7 +61,7 @@ CSRCS   = main.c          \
           snake.c         \
           key.c           \
           select.c		  \
-          time_interval.c \
+          time_manager.c  \
           eeprom_util.c
 
 # List assembler source files here
