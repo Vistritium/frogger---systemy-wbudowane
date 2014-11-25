@@ -1,0 +1,12 @@
+#ifndef EEPROM_UTIL_H_
+#define EEPROM_UTIL_H_
+
+#include "pre_emptive_os/api/general.h"
+
+void saveToEeprom(tU8 *data);
+tU8* readFromEprom();
+
+
+
+
+#endif /* EEPROM_UTIL_H_ */
