@@ -179,6 +179,7 @@ void playSnake(void)
 	  drawFrogger(0);
 
 	  if (collides(froggerX, froggerY)) {
+        drawFrogger(1);
         froggerX = INITIAL_FROGGER_X;
         froggerY = INITIAL_FROGGER_Y;
 
@@ -330,9 +331,9 @@ int collides(tU8 laneX, tU8 laneY) {
 		struct Car car = cars[i];
 		//if lane, check x precisely
 		if(laneY == car.lane){
-			int width = widths[i];
+			int width = widths[car.type];
 			int carLeftBorder = car.x;
-			int carRightBorder = car.x * width;
+			int carRightBorder = car.x + width;
 			if(froggerRightBorder > carLeftBorder && froggerLeftBorder < carRightBorder){
 				return 1;
 			}

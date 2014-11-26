@@ -108,7 +108,7 @@ refreshMenu(int pos)
 
   for (i = 0; i < 4; i++)
   {
-	  lcdGotoxy(22,20+(20*i));
+	  lcdGotoxy(22,20+(16*i));
 
 	  if (i == pos)
 	  {
@@ -340,7 +340,7 @@ proc1(void* arg)
 			if (anyKey == KEY_DOWN)
 			{
 			  pos+=1;
-			  if (pos > 2)
+			  if (pos > 3)
 				  pos = 0;
 			  refreshMenu(pos);
 			}
@@ -349,7 +349,7 @@ proc1(void* arg)
 			{
 			  pos-=1;
 			  if (pos < 0)
-				  pos = 2;
+				  pos = 3;
 			  refreshMenu(pos);
 			}
 
