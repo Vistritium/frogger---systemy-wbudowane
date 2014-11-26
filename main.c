@@ -256,18 +256,18 @@ drawScores()
     }
 }
 
-
+scores_t temp;
 void clearScores()
 {
-    scores_t temp;
+
     temp.nick1[0] = (tU8)'B'; temp.nick1[1] = (tU8)'L'; temp.nick1[2] = (tU8)'U';
     temp.score1 = 7;
     temp.nick2[0] = (tU8)'L'; temp.nick2[1] = (tU8)'O'; temp.nick2[2] = (tU8)'L';
-    temp.score1 = 5;
+    temp.score2 = 5;
     temp.nick3[0] = (tU8)'O'; temp.nick3[1] = (tU8)'M'; temp.nick3[2] = (tU8)'G';
-    temp.score1 = 3;
+    temp.score3 = 3;
     temp.nick4[0] = (tU8)'R'; temp.nick4[1] = (tU8)'E'; temp.nick4[2] = (tU8)'D';
-    temp.score1 = 1;
+    temp.score4 = 1;
     
     
     saveScores(&temp);

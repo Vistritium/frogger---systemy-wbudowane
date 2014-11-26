@@ -5,7 +5,7 @@
 #include "startup/config.h"
 #include <printf_P.h>
 #include "eeprom.h"
-#define MAX_LENGTH 14
+#define MAX_LENGTH 36
 
 static tU8 buffer[MAX_LENGTH];
 static scores_t m_scores;
@@ -49,6 +49,8 @@ static tS16 convertTotS16From(tU8 from){
 }
 
 void saveScores(scores_t* scores){
+	printf("second score is %s %d \n", scores->nick2, scores->score2);
+
 	buffer[0] = scores->nick1[0];
 	buffer[1] = scores->nick1[1];
 	buffer[2] = scores->nick1[2];
@@ -82,6 +84,8 @@ scores_t* loadScores(){
 	m_scores.nick3[1] = scores[9];
 	m_scores.nick3[2] = scores[10];
 	m_scores.score3 = convertTotS16From(scores[11]);
+
+	printf("second score is %s %d \n", m_scores.nick2, m_scores.score2);
 
 	return &m_scores;
 }

@@ -37,11 +37,11 @@ void timeProcStart(void* arg){
 }
 
 void disableLed(tS32 ledNumber){
-	printf("disabling led %d\n", ledNumber);
+	//printf("disabling led %d\n", ledNumber);
 	setPca9532Pin(ledNumber + 8, 1);
 }
 void enableAllLeds(){
-	printf("Enabling all leds\n");
+	//printf("Enabling all leds\n");
 	int i;
 	for(i = 0; i < 7; i++){
 		setPca9532Pin(i + 8, 0);
@@ -49,7 +49,7 @@ void enableAllLeds(){
 }
 
 void start(){
-	printf("start called\n");
+	//printf("start called\n");
 	timeLeft = begin_time;
 	enableAllLeds();
 }
