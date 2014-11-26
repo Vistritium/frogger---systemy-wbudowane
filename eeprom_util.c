@@ -14,7 +14,7 @@ static scores_t m_scores;
 void saveToEeprom(tU8 *data){
 	tS8 errorCode;
 
-	errorCode = eepromWrite(0x0000, data, sizeof(data));
+	errorCode = eepromWrite(0x0000, data, sizeof(data) * 3);
 	  if (errorCode == I2C_CODE_OK)
 		  printf("Wrote successfully");
 	  else
@@ -85,6 +85,7 @@ scores_t* loadScores(){
 	m_scores.nick3[2] = scores[10];
 	m_scores.score3 = convertTotS16From(scores[11]);
 
+	printf("first score is %s %d \n", m_scores.nick1, m_scores.score1);
 	printf("second score is %s %d \n", m_scores.nick2, m_scores.score2);
 
 	return &m_scores;

@@ -15,6 +15,7 @@
 
 void playSnake(void);
 
+
 typedef struct scores {
 	tU8 nick1[3];
 	tS16 score1;
