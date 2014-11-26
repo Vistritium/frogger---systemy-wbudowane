@@ -14,9 +14,12 @@ static scores_t m_scores;
 void saveToEeprom(tU8 *data){
 	tS8 errorCode;
 
-	errorCode = eepromWrite(0x0000, data, sizeof(data) * 3);
-	  if (errorCode == I2C_CODE_OK)
+	errorCode = eepromWrite(0x0000, data, sizeof(data) * 4);
+	  if (errorCode == I2C_CODE_OK){
 		  printf("Wrote successfully");
+		  printf("\nT write string '%s' to address 0x0000", data);
+	  }
+
 	  else
 	  {
 	    printf("\nT write string '%s' to address 0x0000", data);
@@ -66,6 +69,11 @@ void saveScores(scores_t* scores){
 	buffer[10] = scores->nick3[2];
 	buffer[11] = convertTotU8From(scores->score3);
 
+	buffer[12] = scores->nick4[0];
+	buffer[13] = scores->nick4[1];
+	buffer[14] = scores->nick4[2];
+	buffer[15] = convertTotU8From(scores->score4);
+
 	saveToEeprom(buffer);
 }
 scores_t* loadScores(){
@@ -84,6 +92,11 @@ scores_t* loadScores(){
 	m_scores.nick3[1] = scores[9];
 	m_scores.nick3[2] = scores[10];
 	m_scores.score3 = convertTotS16From(scores[11]);
+
+	m_scores.nick4[0] = scores[12];
+	m_scores.nick4[1] = scores[13];
+	m_scores.nick4[2] = scores[14];
+	m_scores.score4 = convertTotS16From(scores[15]);
 
 	printf("first score is %s %d \n", m_scores.nick1, m_scores.score1);
 	printf("second score is %s %d \n", m_scores.nick2, m_scores.score2);
