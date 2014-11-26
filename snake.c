@@ -185,11 +185,11 @@ void playSnake(void)
         loseLife();
 	  }
 
-      if (froggerY >= MAX_LANES - 1) {
+      if (froggerY <= 0) {
         nextLevel();
       }
 
-    } while (keypress != KEY_CENTER || level >= 10 || lives < 1);
+    } while (keypress != KEY_CENTER && level < 10 && lives >= 1);
 
     darkenLeds();
     set7seg(0);
@@ -246,7 +246,7 @@ void setupLevel()
   lcdClrscr();
 
   //draw frame
-  lcdGotoxy(42,0);
+  lcdGotoxy(22,0);
   lcdPuts("FROGGER 2000");
   
   direction   = KEY_RIGHT;
@@ -350,7 +350,7 @@ void nextLevel() {
         speeds[i] += speeds[i] > 0? 1: -1;
     }
 
-    score += level;
+    //score += level;
 
     level += 1;
     if (level < 10)
