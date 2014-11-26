@@ -15,14 +15,22 @@ void set_timeout(tU32 timeout){
 static tS32 begin_time = 30 * 1000;
 
 void timeProcStart(void* arg){
+	printf("time proc start\n");
 	start();
 	for(;;){
 		if(timeLeft > 0){
+			if(timeLeft % 1000 == 0){
+				printf("\n waiting sec, time left %d\n", timeLeft / 1000);
+			}
+			if(timeLeft == 0){
+				stop();
+			}
+
 			wait(1);
 			timeLeft = timeLeft - 1;
 
-			if((timeLeft - 1) % (whenFinish / 8)){
-				disableLed((timeLeft - 1) / (whenFinish / 8));
+			if(((timeLeft - 1) % (begin_time / 8)) == 0){
+				disableLed((timeLeft - 1) / (begin_time / 8));
 			}
 		}
 	}
@@ -30,20 +38,23 @@ void timeProcStart(void* arg){
 
 void disableLed(tS32 ledNumber){
 	printf("disabling led %d\n", ledNumber);
-	setPca9532Pin(ledNumber, 1);
+	setPca9532Pin(ledNumber + 8, 1);
 }
 void enableAllLeds(){
+	printf("Enabling all leds\n");
 	int i;
-	for(i = 0; i < 8; i++){
-		setPca9532Pin(i, 0);
+	for(i = 0; i < 7; i++){
+		setPca9532Pin(i + 8, 0);
 	}
 }
 
 void start(){
+	printf("start called\n");
 	timeLeft = begin_time;
 	enableAllLeds();
 }
 void stop(){
+	printf("game over\n");
 	timeLeft = -1;
 }
 void reset(){

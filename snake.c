@@ -239,6 +239,7 @@ void playSnake(void)
  ****************************************************************************/
 void setupLevel()
 {
+  start();
   tS32 row, col, i;
 
   //clear screen
