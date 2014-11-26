@@ -515,5 +515,7 @@ void saveScore(int newScore)
                 setNick(temp->nick4, newNick);
                 break;
         }
+
+        saveScores(temp);
     }
 }
