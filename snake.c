@@ -28,17 +28,11 @@
 #include "i2c.h"
 #include "adc.h"
 
+#include "snake.h"
 
 /******************************************************************************
  * Typedefs and defines
  *****************************************************************************/
-#define MAXROW 20
-#define MAXCOL 31
-
-#define SNAKE_START_COL 15
-#define SNAKE_START_ROW  7
-#define PAUSE_LENGTH     2
-
 #define MAX_CARS 18
 #define MAX_LANES 8
 #define MAX_ROWS 10
@@ -69,6 +63,21 @@
 
 int collides(tU8 laneX, tU8 laneY);
 
+void drawFrogger(int black);
+
+void set7seg(tU8 value);
+
+void updateFrogger(tU8 key);
+
+void lightLeds();
+
+void darkenLeds();
+
+void loseLife();
+
+void saveScore(int newScore);
+
+
 enum CarType { SLOWEST, SLOW, NORMAL, FAST, FASTEST, CAR_TYPE_COUNT };
 int topPaddings[] = {2, 2, 2, 2, 2};
 int widths[] = {32, 28, 24, 20, 16};
@@ -91,8 +100,6 @@ static tU8 froggerX = INITIAL_FROGGER_X, froggerY = INITIAL_FROGGER_Y;
 /*****************************************************************************
  * Local prototypes
  ****************************************************************************/
-static void showScore();
-static void addSegment();
 static void setupLevel();
 static void gotoxy(tU8 x, tU8 y, tU8 color);
 
@@ -112,23 +119,11 @@ static void nextLevel();
 /*****************************************************************************
  * Local variables
  ****************************************************************************/
-static tS32  score;
-static tS32  snakeLength;
-static tS32  speed;
-static tS32  obstacles;
 static tS32  level;
 static tBool firstPress;
-static tS32  high_score = 0;
-static tS8   screenGrid[MAXROW][MAXCOL];
+static tS32  score = 0, high_score = 0;
 static tS8   direction = KEY_RIGHT;
 static tS8   lives = 7;
-
-struct snakeSegment
-{
-  tS32 row;
-  tS32 col;
-} snake[100];
-
 
 /*****************************************************************************
  * External variables
@@ -150,10 +145,7 @@ void playSnake(void)
   //game loop
   do
   {
-    obstacles = 4;
     level     = 1;
-    score     = 0;
-    speed     = 14;
     srand(ms);        //Ensure random seed initiated
     setupLevel();
 
@@ -168,25 +160,14 @@ void playSnake(void)
       tS32 i;
       
       //delay between snake moves
-      osSleep(speed * PAUSE_LENGTH);
+      //osSleep(speed * PAUSE_LENGTH);
+
+      osSleep(14 * 2);
       
       //check if key press
       keypress = checkKey();
-
-      //add a segment to the end of the snake
-      //addSegment();
-
-      //removed last segment of snake
-      //gotoxy(snake[0].col, snake[0].row, 0);
-
-      //remove last segment from the array
-      //for(i=1; i<=snakeLength; i++)
-        //snake[i-1] = snake[i];
-
-      //display snake in yellow
-      //for (i=0; i<=snakeLength; i++)
-        //gotoxy(snake[i].col, snake[i].row, 0xfc);
-
+      
+      // draw car at new position
       for (i = 0; i < MAX_CARS; ++i) {
         drawCar(&cars[i], 1);
     	updateCar(&cars[i]);
@@ -208,65 +189,16 @@ void playSnake(void)
         nextLevel();
       }
 
-
-      //if first press on each level, pause until a key is pressed
-      //~ if (firstPress == TRUE)
-      //~ {
-        //~ while(KEY_NOTHING == checkKey())
-          //~ ;
-        //~ firstPress = FALSE;
-      //~ }
-
-      /* collision detection - walls (bad!) */
-      //~ if ((snake[snakeLength-1].row >= MAXROW) || (snake[snakeLength-1].row < 0) ||
-          //~ (snake[snakeLength-1].col >= MAXCOL) || (snake[snakeLength-1].col < 0) ||
-
-      /* collision detection - obstacles (bad!) */
-          //~ (screenGrid[snake[snakeLength-1].row][snake[snakeLength-1].col] == 'x'))
-        //~ keypress = KEY_CENTER;
-
-      //collision detection - snake (bad!)
-      //~ for (i=0; i<snakeLength-1; i++)
-        //~ if ((snake[snakeLength-1].row) == (snake[i].row) &&
-            //~ (snake[snakeLength-1].col) == (snake[i].col))
-        //~ {
-          //~ keypress = KEY_CENTER;   //exit loop - game over
-          //~ break;
-        //~ }
-
-      //collision detection - food (good!)
-      //~ if (screenGrid[snake[snakeLength-1].row][snake[snakeLength-1].col] == '.')
-      //~ {
-        //~ //increase score and length of snake
-        //~ score += snakeLength * obstacles;
-        //~ showScore();
-        //~ snakeLength++;
-        //~ addSegment();
-//~ 
-        //~ //if length of snake reaches certain size, onto next level
-        //~ if (snakeLength == (level + 3) * 2)
-        //~ {
-          //~ score += level * 1000;
-          //~ obstacles += 2;          //add obstacles
-          //~ level++;
-          //~ 
-          //~ //check if time to inclrease speed (every 5 levels)
-          //~ if ((level % 5 == 0) && (speed > 1))
-            //~ speed--;
-//~ 
-          //~ //draw next level
-          //~ setupLevel();
-        //~ }
-      //~ }
-    } while (keypress != KEY_CENTER || level >= 10);
+    } while (keypress != KEY_CENTER || level >= 10 || lives < 1);
 
     darkenLeds();
     set7seg(0);
+
+    saveScore(level - 1);
     
     //game over message
     if (score > high_score)
       high_score = score;
-    showScore();
 
     {
       tMenu menu;
@@ -316,53 +248,9 @@ void setupLevel()
   //draw frame
   lcdGotoxy(42,0);
   lcdPuts("FROGGER 2000");
-
-  //draw game board rectangle
-  //lcdRect(0, 14, (4*MAXCOL)+4, (4*MAXROW)+4, 3);
-  //lcdRect(2, 16, 4*MAXCOL,     4*MAXROW,     1);
-
-  //set up global variables for new level
-  snakeLength = level + 4;
+  
   direction   = KEY_RIGHT;
   firstPress  = TRUE;
-
-  //fill grid with blanks
-  for(row=0; row<MAXROW; row++)
-    for(col=0; col<MAXCOL; col++)
-      screenGrid[row][col] = ' ';
-
-  //fill grid with Xs and food
-  for(i=0; i<obstacles*2; i++)
-  {
-    row = rand() % MAXROW;
-    col = rand() % MAXCOL;
-    if (i < obstacles)
-      screenGrid[row][col] = 'x';  //= obstacle
-    else
-      screenGrid[row][col] = '.';  //= food
-  }
-
-  //create snake array of length snakeLength
-  for(i=0; i<snakeLength; i++)
-  {
-    snake[i].row = SNAKE_START_ROW;
-    snake[i].col = SNAKE_START_COL + i;
-  }
-
-  //~ //draw game board
-  //~ for(row=0; row<MAXROW; row++)
-  //~ {
-    //~ for(col=0; col<MAXCOL; col++)
-    //~ {
-      //~ switch(screenGrid[row][col])
-      //~ {
-        //~ case ' ': gotoxy(col,row,0); break;
-        //~ case '.': gotoxy(col,row,0x1c); break;
-        //~ case 'x': gotoxy(col,row,0xe0); break;
-        //~ default: break;
-      //~ }
-    //~ }
-  //~ }
 
   tU8 carsPerLane = MAX_CARS / (MAX_LANES - 2);
 
@@ -371,85 +259,7 @@ void setupLevel()
 	  cars[i].type = carTypesOnLanes[cars[i].lane - 1];
 	  cars[i].x = (cars[i].lane * carsPerLane - i) * widths[cars[i].type] + (24 + 4 * abs(speeds[cars[i].type]));
   }
-
-  showScore();
 }
-
-
-/*****************************************************************************
- *
- * Description:
- *    Draw current score
- *
- ****************************************************************************/
-void showScore()
-{
-  tU8 str[13];
-  
-  str[0] = 'L';
-  str[1] = ':';
-  str[2] = level + '0';
-  str[3] = ' ';
-  str[4] = 'S';
-  str[5] = ':';
-  str[6] = score/100000 + '0';
-  str[7] = (score/10000)%10 + '0';
-  str[8] = (score/1000)%10 + '0';
-  str[9] = (score/100)%10 + '0';
-  str[10] = (score/10)%10 + '0';
-  str[11] = score%10 + '0';
-  str[12] = 0;
-  
-  //remove leading zeroes
-  if (str[6] == '0')
-  {
-    str[6] = ' ';
-    if (str[7] == '0')
-    {
-      str[7] = ' ';
-      if (str[8] == '0')
-      {
-        str[8] = ' ';
-        if (str[9] == '0')
-        {
-          str[9] = ' ';
-          if (str[10] == '0')
-          {
-            str[10] = ' ';
-          }
-        }
-      }
-    }
-  }
-  lcdGotoxy(0,114);
-  lcdPuts(str);
-}
-
-
-/*****************************************************************************
- *
- * Description:
- *    Add one snake segment
- *
- ****************************************************************************/
-void addSegment()
-{
-  switch(direction)
-  {
-    case(KEY_RIGHT): snake[snakeLength].row = snake[snakeLength-1].row;
-                     snake[snakeLength].col = snake[snakeLength-1].col+1;
-                     break;
-    case(KEY_LEFT) : snake[snakeLength].row = snake[snakeLength-1].row;
-                     snake[snakeLength].col = snake[snakeLength-1].col-1;
-                     break;
-    case(KEY_UP)   : snake[snakeLength].row = snake[snakeLength-1].row-1;
-                     snake[snakeLength].col = snake[snakeLength-1].col;
-                     break;
-    case(KEY_DOWN) : snake[snakeLength].row = snake[snakeLength-1].row+1;
-                     snake[snakeLength].col = snake[snakeLength-1].col;
-  }
-}
-
 
 /*****************************************************************************
  *
@@ -595,4 +405,113 @@ void set7seg(tU8 value)
   }
 
   IOSET  = 0x00006000;
+}
+
+void setNick(char* nick, char* what) {
+    nick[0] = what[0];
+    nick[1] = what[1];
+    nick[2] = what[2];
+}
+
+void saveScore(int newScore)
+{
+    scores_t* temp;
+    
+    temp = loadScores();
+
+    int maxpos = -1;
+    int otherValue = 0;
+
+    int i;
+    for (i = 3; i >= 0; i -= 1)
+    {
+        switch (i)
+        {
+            case 0:
+                otherValue = temp->score1;
+                break;
+            case 1:
+                otherValue = temp->score2;
+                break;
+            case 2:
+                otherValue = temp->score3;
+                break;
+            case 3:
+                otherValue = temp->score4;
+                break;
+        }
+
+        if (newScore > otherValue)
+            maxpos = i;
+    }
+
+    if (maxpos != -1)
+    {
+        for (i = 2; i >= maxpos; i -= 1)
+        {
+            switch (i)
+            {
+                case 0:
+                    temp->score2 = temp->score1;
+                    temp->nick2[0] = temp->nick1[0];
+                    temp->nick2[1] = temp->nick1[1];
+                    temp->nick2[2] = temp->nick1[2];
+                    break;
+                case 1:
+                    temp->score3 = temp->score2;
+                    temp->nick3[0] = temp->nick2[0];
+                    temp->nick3[1] = temp->nick2[1];
+                    temp->nick3[2] = temp->nick2[2];
+                    break;
+                case 2:
+                    temp->score4 = temp->score3;
+                    temp->nick4[0] = temp->nick3[0];
+                    temp->nick4[1] = temp->nick3[1];
+                    temp->nick4[2] = temp->nick3[2];
+                    break;
+            }
+        }
+
+        char newNick[] = "   ";
+        i = rand() % 5;
+
+        switch (i)
+        {
+            case 0:
+                setNick(newNick, "ABC");
+                break;
+            case 1:
+                setNick(newNick, "ZZZ");
+                break;
+            case 2:
+                setNick(newNick, "NOO");
+                break;
+            case 3:
+                setNick(newNick, "DLC");
+                break;
+            case 4:
+                setNick(newNick, "DVD");
+                break;
+        }
+
+        switch (maxpos)
+        {
+            case 0:
+                temp->score1 = newScore;
+                setNick(temp->nick1, newNick);
+                break;
+            case 1:
+                temp->score2 = newScore;
+                setNick(temp->nick2, newNick);
+                break;
+            case 2:
+                temp->score3 = newScore;
+                setNick(temp->nick3, newNick);
+                break;
+            case 3:
+                temp->score4 = newScore;
+                setNick(temp->nick4, newNick);
+                break;
+        }
+    }
 }

@@ -23,6 +23,8 @@
 #include "snake.h"
 #include "key.h"
 
+#include "eeprom_util.h"
+
 #include "fire_0_100x40c.h"
 #include "fire_1_100x40c.h"
 #include "fire_2_100x40c.h"
@@ -189,7 +191,11 @@ drawScores()
   lcdColor(0x6d,0);
   lcdPuts("HI SCORES");
 
-
+  scores_t* temp;
+    
+    
+  temp = loadScores();
+    
   int i;
 
     for (i = 0; i < 4; i++)
@@ -211,16 +217,16 @@ drawScores()
   	  switch(i)
   	  {
   		  case 0:
-  			  lcdPuts("OMG");
+  			  lcdPuts(temp->nick1);
   			  break;
   		  case 1:
-  			  lcdPuts("BLU");
+  			  lcdPuts(temp->nick2);
   			  break;
   		  case 2:
-  			  lcdPuts("YES");
+  			  lcdPuts(temp->nick3);
   			  break;
-  		  case 3:
-  			  lcdPuts("RED");
+  		  case 3:          
+  			  lcdPuts(temp->nick4);
   			  break;
   	  }
 
@@ -229,28 +235,42 @@ drawScores()
 
 	  lcdColor(0x00,0xfd);
 
+
 	  switch(i)
 	  {
 		  case 0:
-			  lcdPuts("5600");
+			  blbl[0] = temp->score1 + '0';
 			  break;
 		  case 1:
-			  lcdPuts("4000");
+			  blbl[0] = temp->score2 + '0';
 			  break;
 		  case 2:
-			  lcdPuts("380");
+			  blbl[0] = temp->score3 + '0';
 			  break;
 		  case 3:
-			  lcdPuts("6");
+			  blbl[0] = temp->score4 + '0';
 			  break;
 	  }
+
+      lcdPuts(blbl);
     }
 }
 
 
 void clearScores()
 {
+    scores_t temp;
+    temp.nick1[0] = (tU8)'B'; temp.nick1[1] = (tU8)'L'; temp.nick1[2] = (tU8)'U';
+    temp.score1 = 7;
+    temp.nick2[0] = (tU8)'L'; temp.nick2[1] = (tU8)'O'; temp.nick2[2] = (tU8)'L';
+    temp.score1 = 5;
+    temp.nick3[0] = (tU8)'O'; temp.nick3[1] = (tU8)'M'; temp.nick3[2] = (tU8)'G';
+    temp.score1 = 3;
+    temp.nick4[0] = (tU8)'R'; temp.nick4[1] = (tU8)'E'; temp.nick4[2] = (tU8)'D';
+    temp.score1 = 1;
     
+    
+    saveScores(&temp);
 }
 
 
