@@ -56,6 +56,9 @@ void start(){
 void stop(){
 	printf("game over\n");
 	timeLeft = -1;
+	setToLoseLife();
+	reset();
+
 }
 void reset(){
 	start();

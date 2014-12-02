@@ -7,6 +7,7 @@
 #include <consol.h>
 #include "../pre_emptive_os/api/osapi.h"
 #include "../pre_emptive_os/api/general.h"
+#include "snake.h"
 
 extern volatile tS32 timeLeft;
 

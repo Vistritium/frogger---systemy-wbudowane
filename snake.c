@@ -111,7 +111,11 @@ int collides(tU8 laneX, tU8 laneY);
 void set7seg(tU8 value);
 void lightLeds();
 void darkenLeds();
-void loseLife();
+
+int shouldLoseLife = 0;
+void setToLoseLife(){
+	shouldLoseLife = 1;
+}
 
 static void nextLevel();
 
@@ -164,6 +168,12 @@ void playSnake(void)
 
       osSleep(14 * 2);
       
+      //shouldLoseLife is called from different thread. It only sets flag so main create manages lifeLosing
+      if(shouldLoseLife == 1){
+    	  shouldLoseLife = 0;
+    	  loseLife();
+      }
+
       //check if key press
       keypress = checkKey();
       

@@ -14,7 +14,8 @@
 #define _SNAKE_H_
 
 void playSnake(void);
-
+void loseLife();
+void setToLoseLife();
 
 typedef struct scores {
 	tU8 nick1[3];
